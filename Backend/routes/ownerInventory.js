@@ -160,3 +160,186 @@ router.get('/owner/inventory/:book_id', authOwner, (req, res) => {
         res.send(createResult(null, rows[0] || null));
     });
 });
+
+
+/* 
+   Update full inventory details of a book
+ */
+router.put('/owner/inventory/:book_id', authOwner, (req, res) => {
+
+    const { book_id } = req.params;
+
+    const sql = `
+        UPDATE book_inventory bi
+        JOIN bookstores s ON bi.store_id = s.store_id
+        SET bi.price = ?, bi.mrp = ?, bi.stock_quantity = ?, bi.is_active = ?
+        WHERE s.owner_id = ? AND bi.book_id = ?
+    `;
+
+    const {
+        price,
+        mrp,
+        stock_quantity,
+        is_active
+    } = req.body;
+
+    pool.query(
+        sql,
+        [
+            price,
+            mrp,
+            stock_quantity,
+            is_active,
+            req.user.user_id,
+            book_id
+        ],
+        (err) => {
+            if (err) return res.send(createResult(err));
+
+            res.send(
+                createResult(null, {
+                    message: 'Inventory updated successfully'
+                })
+            );
+        }
+    );
+});
+
+
+/* Remove book from inventory */
+router.delete('/owner/inventory/:book_id', authOwner, (req, res) => {
+
+    const { book_id } = req.params;
+
+    const sql = `
+        DELETE bi
+        FROM book_inventory bi
+        JOIN bookstores s ON bi.store_id = s.store_id
+        WHERE s.owner_id = ? AND bi.book_id = ?
+    `;
+
+    pool.query(sql, [req.user.user_id, book_id], (err) => {
+        if (err) return res.send(createResult(err));
+
+        res.send(
+            createResult(null, {
+                message: 'Book removed from inventory'
+            })
+        );
+    });
+});
+
+/* Update stock quantity only */
+router.patch('/owner/inventory/:book_id/stock', authOwner, (req, res) => {
+
+    const { stock_quantity } = req.body;
+    const { book_id } = req.params;
+
+    if (stock_quantity === undefined) {
+        return res.send(createResult('stock_quantity is required'));
+    }
+
+    const sql = `
+        UPDATE book_inventory bi
+        JOIN bookstores s ON bi.store_id = s.store_id
+        SET bi.stock_quantity = ?
+        WHERE s.owner_id = ? AND bi.book_id = ?
+    `;
+
+    pool.query(
+        sql,
+        [stock_quantity, req.user.user_id, book_id],
+        (err) => {
+            if (err) return res.send(createResult(err));
+            res.send(createResult(null, 'Stock updated successfully'));
+        }
+    );
+});
+
+/* Update price and MRP */
+router.patch('/owner/inventory/:book_id/price', authOwner, (req, res) => {
+
+    const { price, mrp } = req.body;
+    const { book_id } = req.params;
+
+    const sql = `
+        UPDATE book_inventory bi
+        JOIN bookstores s ON bi.store_id = s.store_id
+        SET bi.price = ?, bi.mrp = ?
+        WHERE s.owner_id = ? AND bi.book_id = ?
+    `;
+
+    pool.query(
+        sql,
+        [price, mrp, req.user.user_id, book_id],
+        (err) => {
+            if (err) return res.send(createResult(err));
+            res.send(createResult(null, 'Price updated successfully'));
+        }
+    );
+});
+
+/* Activate or deactivate a book for sale */
+router.patch('/owner/inventory/:book_id/status', authOwner, (req, res) => {
+
+    const { is_active } = req.body;
+    const { book_id } = req.params;
+
+    const sql = `
+        UPDATE book_inventory bi
+        JOIN bookstores s ON bi.store_id = s.store_id
+        SET bi.is_active = ?
+        WHERE s.owner_id = ? AND bi.book_id = ?
+    `;
+
+    pool.query(
+        sql,
+        [is_active, req.user.user_id, book_id],
+        (err) => {
+            if (err) return res.send(createResult(err));
+            res.send(createResult(null, 'Book status updated'));
+        }
+    );
+});
+
+/* Get books with low stock (threshold < 5) */
+router.get('/owner/inventory/low-stock', authOwner, (req, res) => {
+
+    const sql = `
+        SELECT bi.book_id, b.title, bi.stock_quantity
+        FROM book_inventory bi
+        JOIN books b ON bi.book_id = b.book_id
+        JOIN bookstores s ON bi.store_id = s.store_id
+        WHERE s.owner_id = ? AND bi.stock_quantity < 5
+    `;
+
+    pool.query(sql, [req.user.user_id], (err, rows) => {
+        if (err) return res.send(createResult(err));
+        res.send(createResult(null, rows));
+    });
+});
+
+/* Get top selling books for the store */
+router.get('/owner/inventory/top-selling', authOwner, (req, res) => {
+
+    const sql = `
+        SELECT
+            b.title,
+            SUM(oi.quantity) AS total_sold
+        FROM order_items oi
+        JOIN book_inventory bi ON oi.inventory_id = bi.inventory_id
+        JOIN books b ON bi.book_id = b.book_id
+        JOIN bookstores s ON bi.store_id = s.store_id
+        WHERE s.owner_id = ?
+        GROUP BY bi.book_id
+        ORDER BY total_sold DESC
+        LIMIT 10
+    `;
+
+    pool.query(sql, [req.user.user_id], (err, rows) => {
+        if (err) return res.send(createResult(err));
+        res.send(createResult(null, rows));
+    });
+});
+
+module.exports = router;
