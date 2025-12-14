@@ -19,3 +19,17 @@ router.get('/', (req, res) => {
         res.send(result.createResult(err, data))
     })
 })
+
+
+// Add a New Category
+
+router.post('/', (req, res) => {
+    const { category_name, parent_id } = req.body
+    const sql = `INSERT INTO categories(category_name, parent_id) VALUES (?, ?)`
+    
+    const finalParentId = (parent_id === 'null' || !parent_id) ? null : parent_id;
+
+    pool.query(sql, [category_name, finalParentId], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
