@@ -34,6 +34,7 @@ router.get('/', (req, res) => {
 })
 
 
+
 // Add a new book 
 
 router.post('/', upload.single('cover'), (req, res) => {
@@ -85,6 +86,30 @@ router.post('/', upload.single('cover'), (req, res) => {
                 res.send(result.createResult(null, { book: bookData, inventory: inventoryData }))
             })
         })
+    })
+})
+
+
+
+// Update Inventory 
+
+router.put('/', (req, res) => {
+    // 1. Get all the data directly
+    const { book_id, store_id, price, mrp, stock_quantity } = req.body
+
+    // 2. Check: Ensure nothing is missing
+    if (!book_id || !store_id || !price || !mrp || !stock_quantity) {
+        return res.send(result.createResult("Please provide all fields: book_id, store_id, price, mrp, stock_quantity"))
+    }
+
+    // 3. One simple SQL command to update everything
+    const sql = `UPDATE book_inventory 
+                 SET price = ?, mrp = ?, stock_quantity = ? 
+                 WHERE book_id = ? AND store_id = ?`
+
+    // 4. Run it
+    pool.query(sql, [price, mrp, stock_quantity, book_id, store_id], (err, data) => {
+        res.send(result.createResult(err, data))
     })
 })
 
