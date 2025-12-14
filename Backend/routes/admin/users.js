@@ -1,8 +1,8 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 
-const pool = require('../utils/db')
-const result = require('../utils/result')
+const pool = require('../../utils/db')
+const result = require('../../utils/result')
 
 const router = express.Router()
 const SaltRounds = 10

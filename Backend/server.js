@@ -9,8 +9,8 @@ const adminUserRouter = require('./routes/admin/users')
 const adminBookRouter = require('./routes/admin/books')
 const adminCategoryRouter = require('./routes/admin/categories')
 const adminOrderRouter = require('./routes/admin/orders')
-const adminAuthorRouter = require('./routes/admin/authors')      // New
-const adminPublisherRouter = require('./routes/admin/publishers') // New
+const adminAuthorRouter = require('./routes/admin/authors')      
+const adminPublisherRouter = require('./routes/admin/publishers') 
 
 
 // USER ROUTES const
