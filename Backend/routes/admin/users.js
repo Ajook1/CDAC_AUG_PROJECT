@@ -39,3 +39,33 @@ router.post('/', (req, res) => {
         }
     })
 })
+
+
+
+// ADMIN : Update User 
+
+router.put('/', (req, res) => {
+    const { user_id, phone, role_id, is_active } = req.body
+
+    // Step 1: Get OLD data First
+    const sqlGet = `SELECT * FROM users WHERE user_id = ?`
+    
+    pool.query(sqlGet, [user_id], (err, data) => {
+        if (err) return res.send(result.createResult(err))
+        
+        const oldUser = data[0] 
+
+       
+        const finalPhone  = (phone !== undefined) ? phone : oldUser.phone
+        const finalRole   = (role_id !== undefined) ? role_id : oldUser.role_id        
+        const finalActive = (is_active !== undefined) ? is_active : oldUser.is_active
+
+        //  Update Everything with  final values
+        const sqlUpdate = `UPDATE users SET phone = ?, role_id = ?, is_active = ? WHERE user_id = ?`
+        
+        pool.query(sqlUpdate, [finalPhone, finalRole, finalActive, user_id], (err, data) => {
+            res.send(result.createResult(err, data))
+        })
+    })
+})
+
