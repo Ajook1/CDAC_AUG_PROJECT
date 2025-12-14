@@ -69,3 +69,16 @@ router.put('/', (req, res) => {
     })
 })
 
+
+
+// ADMIN : DELETE User
+
+router.delete('/', (req, res) => {
+    const { user_id } = req.body
+    const sql = `DELETE FROM users WHERE user_id = ?`
+    pool.query(sql, [user_id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+module.exports = router
