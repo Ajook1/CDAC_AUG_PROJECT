@@ -47,3 +47,16 @@ router.put('/', (req, res) => {
         res.send(result.createResult(err, data))
     })
 })
+
+
+//  Delete a category
+
+router.delete('/', (req, res) => {
+    const { category_id } = req.body
+    const sql = `DELETE FROM categories WHERE category_id = ?`
+    pool.query(sql, [category_id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+module.exports = router
