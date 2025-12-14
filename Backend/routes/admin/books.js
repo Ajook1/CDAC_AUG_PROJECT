@@ -113,3 +113,39 @@ router.put('/', (req, res) => {
     })
 })
 
+
+
+// DELETE: Delete a book
+router.delete('/', (req, res) => {
+    const { book_id } = req.body
+
+    // 1. Validation
+    if (!book_id) {
+        return res.send(result.createResult("Book ID is required"))
+    }
+
+    // 2. Delete from Inventory FIRST (Child Table)
+    const sqlInventory = `DELETE FROM book_inventory WHERE book_id = ?`
+
+    pool.query(sqlInventory, [book_id], (err, data) => {
+        if (err) {
+            return res.send(result.createResult(err))
+        }
+
+        // 3. Delete from Books SECOND (Parent Table)
+        const sqlBook = `DELETE FROM books WHERE book_id = ?`
+
+        pool.query(sqlBook, [book_id], (err, resultData) => {
+            if (err) {
+                // If this fails, it means the book is in an Order or Cart.
+                // The database protects you from deleting sold books!
+                
+                return res.send(result.createResult(err))
+            }
+
+            res.send(result.createResult(null, { message: "Book deleted successfully" }))
+        })
+    })
+})
+
+module.exports = router
