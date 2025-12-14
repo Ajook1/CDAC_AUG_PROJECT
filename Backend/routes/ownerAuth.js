@@ -136,3 +136,65 @@ router.post('/owner/login', (req, res) => {
         );
     });
 });
+
+
+/* =====================================================
+   PUT /owner/password
+   Change owner password
+   ===================================================== */
+router.put('/owner/password', authOwner, (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+        return res.send(createResult('Old and new passwords required'));
+    }
+
+    const sql = 'SELECT password_hash FROM users WHERE user_id=?';
+
+    pool.query(sql, [req.user.user_id], (err, rows) => {
+        if (err) return res.send(createResult(err));
+
+        const match = bcrypt.compareSync(oldPassword, rows[0].password_hash);
+        if (!match) {
+            return res.send(createResult('Old password incorrect'));
+        }
+
+        const newHash = bcrypt.hashSync(newPassword, BCRYPT_SALT_ROUNDS);
+
+        pool.query(
+            'UPDATE users SET password_hash=? WHERE user_id=?',
+            [newHash, req.user.user_id],
+            (err2) => {
+                if (err2) return res.send(createResult(err2));
+                res.send(createResult(null, 'Password updated successfully'));
+            }
+        );
+    });
+});
+
+/* =====================================================
+   DELETE /owner/account
+   Soft delete owner and store
+   ===================================================== */
+router.delete('/owner/account', authOwner, (req, res) => {
+    const userId = req.user.user_id;
+
+    pool.query(
+        'UPDATE users SET is_active=0 WHERE user_id=?',
+        [userId],
+        (err) => {
+            if (err) return res.send(createResult(err));
+
+            pool.query(
+                'UPDATE bookstores SET is_active=0 WHERE owner_id=?',
+                [userId],
+                (err2) => {
+                    if (err2) return res.send(createResult(err2));
+                    res.send(createResult(null, 'Owner account deactivated'));
+                }
+            );
+        }
+    );
+});
+
+module.exports = router;
