@@ -22,3 +22,24 @@ router.get('/', (req, res) => {
         res.send(result.createResult(err, data))
     })
 })
+
+
+// GET Order Details (By Order_Id)
+
+router.get('/:order_id', (req, res) => {
+    const order_id = req.params.order_id
+    const sql = `
+        SELECT 
+            oi.order_item_id, oi.quantity, oi.price AS item_price,
+            b.title AS book_title, a.name AS author_name
+        FROM order_items oi
+        JOIN book_inventory bi ON oi.inventory_id = bi.inventory_id
+        JOIN books b ON bi.book_id = b.book_id
+        JOIN authors a ON b.author_id = a.author_id
+        WHERE oi.order_id = ?
+    `
+    pool.query(sql, [order_id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
