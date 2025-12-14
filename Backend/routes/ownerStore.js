@@ -59,3 +59,27 @@ router.get('/owner/stores', authOwner, async (req, res) => {
         res.send(createResult(err));
     }
 });
+
+
+// GET SINGLE STORE FOR THE OWNER 
+router.get('/owner/store/:store_id', authOwner, async (req, res) => {
+    try {
+        const sql = `
+      SELECT * FROM bookstores
+      WHERE owner_id = ? AND store_id = ?
+    `;
+
+        const [rows] = await db.query(sql, [
+            req.user.user_id,
+            req.params.store_id
+        ]);
+
+        if (!rows.length) {
+            return res.send(createResult('Store not found'));
+        }
+
+        res.send(createResult(null, rows[0]));
+    } catch (err) {
+        res.send(createResult(err));
+    }
+});
