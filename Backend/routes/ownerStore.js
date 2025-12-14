@@ -83,3 +83,53 @@ router.get('/owner/store/:store_id', authOwner, async (req, res) => {
         res.send(createResult(err));
     }
 });
+
+
+// Update store details by the store id for the owner
+router.put('/owner/store/:store_id', authOwner, async (req, res) => {
+    try {
+        const allowedFields = [
+            'store_name',
+            'description',
+            'address_line',
+            'city',
+            'state',
+            'postal_code',
+            'country',
+            'contact_email',
+            'contact_phone'
+        ];
+
+        const updates = [];
+        const values = [];
+
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                updates.push(`${field} = ?`);
+                values.push(req.body[field]);
+            }
+        }
+
+        if (updates.length === 0) {
+            return res.send(createResult('No fields to update'));
+        }
+
+        values.push(req.params.store_id, req.user.user_id);
+
+        const sql = `
+      UPDATE bookstores
+      SET ${updates.join(', ')}
+      WHERE store_id = ? AND owner_id = ?
+    `;
+
+        const [result] = await db.query(sql, values);
+
+        if (!result.affectedRows) {
+            return res.send(createResult('Store not found or unauthorized'));
+        }
+
+        res.send(createResult(null, { message: 'Store updated successfully' }));
+    } catch (err) {
+        res.send(createResult(err));
+    }
+});
