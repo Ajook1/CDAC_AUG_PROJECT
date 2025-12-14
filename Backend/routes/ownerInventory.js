@@ -106,3 +106,32 @@ router.post('/owner/inventory', authOwner, (req, res) => {
         }
     });
 });
+
+
+
+/* 
+   show all the books in the inventory for the owner
+*/
+router.get('/owner/inventory', authOwner, (req, res) => {
+
+    const sql = `
+        SELECT
+            bi.inventory_id,
+            bi.book_id,
+            bi.price,
+            bi.mrp,
+            bi.stock_quantity,
+            bi.is_active,
+            b.title,
+            b.isbn
+        FROM book_inventory bi
+        JOIN books b ON bi.book_id = b.book_id
+        JOIN bookstores s ON bi.store_id = s.store_id
+        WHERE s.owner_id = ?
+    `;
+
+    pool.query(sql, [req.user.user_id], (err, rows) => {
+        if (err) return res.send(createResult(err));
+        res.send(createResult(null, rows));
+    });
+});
