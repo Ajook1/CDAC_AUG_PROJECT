@@ -43,3 +43,18 @@ router.get('/:order_id', (req, res) => {
     })
 })
 
+
+// Update Order Status (Shipped/Delivered/Cancelled)
+
+router.put('/', (req, res) => {
+    const { order_id, status } = req.body
+    // status values: 'Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'
+    const sql = `UPDATE orders SET status = ? WHERE order_id = ?`
+
+    pool.query(sql, [status, order_id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
+
+module.exports = router
+
