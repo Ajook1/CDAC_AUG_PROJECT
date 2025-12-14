@@ -33,3 +33,17 @@ router.post('/', (req, res) => {
         res.send(result.createResult(err, data))
     })
 })
+
+
+// Update Category
+
+router.put('/', (req, res) => {
+    const { category_id, category_name, parent_id } = req.body
+    const sql = `UPDATE categories SET category_name = ?, parent_id = ? WHERE category_id = ?`
+
+    const finalParentId = (parent_id === 'null' || !parent_id) ? null : parent_id;
+
+    pool.query(sql, [category_name, finalParentId, category_id], (err, data) => {
+        res.send(result.createResult(err, data))
+    })
+})
