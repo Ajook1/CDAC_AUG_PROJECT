@@ -29,7 +29,7 @@ router.post('/owner/inventory', authOwner, (req, res) => {
 
         const store_id = storeRows[0].store_id;
 
-        
+
         // CASE 1: Existing book (ADDED BY ADMIN)
         if (book_id) {
             return addToInventory(book_id);
@@ -133,5 +133,30 @@ router.get('/owner/inventory', authOwner, (req, res) => {
     pool.query(sql, [req.user.user_id], (err, rows) => {
         if (err) return res.send(createResult(err));
         res.send(createResult(null, rows));
+    });
+});
+
+
+/* 
+   fetch single book details from inventory for the owner
+ */
+router.get('/owner/inventory/:book_id', authOwner, (req, res) => {
+
+    const { book_id } = req.params;
+
+    const sql = `
+        SELECT
+            bi.*,
+            b.title,
+            b.description
+        FROM book_inventory bi
+        JOIN books b ON bi.book_id = b.book_id
+        JOIN bookstores s ON bi.store_id = s.store_id
+        WHERE s.owner_id = ? AND bi.book_id = ?
+    `;
+
+    pool.query(sql, [req.user.user_id, book_id], (err, rows) => {
+        if (err) return res.send(createResult(err));
+        res.send(createResult(null, rows[0] || null));
     });
 });
