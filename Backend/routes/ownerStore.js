@@ -133,3 +133,73 @@ router.put('/owner/store/:store_id', authOwner, async (req, res) => {
         res.send(createResult(err));
     }
 });
+
+
+
+// update store active status it is active or not
+router.patch('/owner/store/:store_id/status', authOwner, async (req, res) => {
+    try {
+        const { is_active } = req.body;
+
+        const sql = `
+      UPDATE bookstores
+      SET is_active = ?
+      WHERE store_id = ? AND owner_id = ?
+    `;
+
+        const [result] = await db.query(sql, [
+            is_active ? 1 : 0,
+            req.params.store_id,
+            req.user.user_id
+        ]);
+
+        if (!result.affectedRows) {
+            return res.send(createResult('Store not found or unauthorized'));
+        }
+
+        res.send(createResult(null, { message: 'Store status updated' }));
+    } catch (err) {
+        res.send(createResult(err));
+    }
+});
+
+// upload store image for 
+router.post(
+    '/owner/store/:store_id/image',
+    authOwner,
+    upload.single('image'),
+    async (req, res) => {
+        try {
+            if (!req.file) {
+                return res.send(createResult('Image file required'));
+            }
+
+            const sql = `
+        UPDATE bookstores
+        SET extra1 = ?
+        WHERE store_id = ? AND owner_id = ?
+      `;
+
+            const [result] = await db.query(sql, [
+                req.file.path,
+                req.params.store_id,
+                req.user.user_id
+            ]);
+
+            if (!result.affectedRows) {
+                return res.send(createResult('Store not found or unauthorized'));
+            }
+
+            res.send(
+                createResult(null, {
+                    message: 'Store image uploaded successfully',
+                    image_path: req.file.path
+                })
+            );
+        } catch (err) {
+            res.send(createResult(err));
+        }
+    }
+);
+
+module.exports = router;
