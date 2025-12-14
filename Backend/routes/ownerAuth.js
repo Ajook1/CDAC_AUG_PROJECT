@@ -82,3 +82,57 @@ router.post('/owner/register', (req, res) => {
         });
     });
 });
+
+
+
+/* =====================================================
+   POST /owner/login
+   Login owner and return JWT token
+   ===================================================== */
+router.post('/owner/login', (req, res) => {
+    const { email, password } = req.body;
+
+    const sql = `
+        SELECT u.*, r.role_name
+        FROM users u
+        JOIN roles r ON u.role_id = r.role_id
+        WHERE u.email = ?
+    `;
+
+    pool.query(sql, [email], (err, rows) => {
+        if (err) return res.send(createResult(err));
+        if (!rows.length) return res.send(createResult('Invalid email or password'));
+
+        const user = rows[0];
+
+        // Ensure OWNER role
+        if (user.role_name !== 'OWNER') {
+            return res.send(createResult('Not an owner account'));
+        }
+
+        // Compare password
+        const match = bcrypt.compareSync(password, user.password_hash);
+        if (!match) {
+            return res.send(createResult('Invalid email or password'));
+        }
+
+        // Create JWT token
+        const token = jwt.sign(
+            { user_id: user.user_id, role_name: user.role_name },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.send(
+            createResult(null, {
+                token,
+                user: {
+                    user_id: user.user_id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone
+                }
+            })
+        );
+    });
+});
