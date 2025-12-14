@@ -48,3 +48,14 @@ router.post('/owner/store', authOwner, async (req, res) => {
         res.send(createResult(err));
     }
 });
+
+// Get all store for the owner 
+router.get('/owner/stores', authOwner, async (req, res) => {
+    try {
+        const sql = `SELECT * FROM bookstores WHERE owner_id = ?`;
+        const [stores] = await db.query(sql, [req.user.user_id]);
+        res.send(createResult(null, stores));
+    } catch (err) {
+        res.send(createResult(err));
+    }
+});
