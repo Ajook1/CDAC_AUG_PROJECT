@@ -1,0 +1,60 @@
+/* RESET */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* LINKS */
+a {
+  text-decoration: none;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 230px;
+  min-height: 100vh;
+  background-color: #1f2933;
+}
+
+.sidebar .nav-link {
+  color: #ffffff;
+  padding: 10px 12px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  display: block;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #374151;
+}
+
+.sidebar .nav-link.active {
+  background-color: #2563eb;
+}
+
+/* PAGE CONTENT */
+.container-fluid {
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+/* TABLE FIX */
+table {
+  background-color: #ffffff;
+}
+
+/* BUTTONS */
+.btn {
+  border-radius: 6px;
+}
+
+/* REMOVE VITE CENTERING */
+#root {
+  min-height: 100vh;
+}
