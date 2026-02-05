@@ -11,7 +11,7 @@ import Orders from "./pages/Orders";
 import Profile from "./pages/Profile";
 import Addresses from "./pages/Addresses";
 import ConfirmOrder from "./pages/ConfirmOrder";
-import Wishlist from "./pages/Wishlist";
+import Wishlist from "./pages/Wishlist.js";
 import UserLayout from "./layouts/UserLayout";
 import ForgotPassword from "./pages/ForgotPassword";
 
