@@ -53,4 +53,5 @@ router.put("/password", authorizeUser, async (req, res) => {
     );
 });
 
+
 module.exports = router;
