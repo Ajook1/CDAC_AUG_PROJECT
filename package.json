@@ -1,0 +1,16 @@
+{
+  "name": "bookmitra",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm start --prefix FRONTEND_USER\" \"npm run dev --prefix FRONTEND_ADMIN\" \"npm run dev --prefix FRONTEND_OWNER/my-react-app\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
